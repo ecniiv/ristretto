@@ -22,9 +22,12 @@
 %token NUMBER
 %token V_STRING
 %token V_INT
+%token V_VOID
 %token V_BOOL
 
-%token NOT DECL EQ NEQ LEQ GEQ AND OR SEMIC TRUE FALSE ID ADD SUB MUL DIV SYMB_END IF ELSE STRING PRINTLN RETURN
+%token S_BRACKET E_BRACKET
+%left S_BRACKET E_BRACKET
+%token NOT DECL EQ NEQ LEQ GEQ AND OR TRUE FALSE ID ADD SUB MUL DIV SYMB_END IF ELSE STRING MAIN_VOID PRINTLN RETURN
 %left OR
 %left AND
 %left DECL
@@ -33,10 +36,10 @@
 %precedence NOT
 %left ADD SUB
 %left MUL DIV
+%left MAIN_VOID
 %left PRINTLN
 %type<string> STRING
 %type<string> ID
-%type<string> SEMIC
 
 %start lignes
 %%
@@ -52,6 +55,15 @@ lignes expr error '\n'
 ;
 
 expr :
+| V_VOID MAIN_VOID S_BRACKET {
+  ristretto_write_super_class(ris);
+  ris -> code_size += 8;
+  ristretto_write_main(ris);
+}
+| E_BRACKET {
+  unsigned char end[] = "\xb1\x00\x00\x00\x00\x00\x00";
+  fwrite(end, sizeof(end) - 1, 1, ris -> out);
+}
 | IF '(' expr ')' '{' expr '}' {
   fprintf(stdout, "IF expr THEN expr\n");
 }
@@ -95,7 +107,9 @@ expr :
   ristretto_add_entry(ris, s);
 }
 | PRINTLN ID {
-
+  ristretto_getstaticout(ris);
+  int d = linked_list_search(ll, "p");
+  ristretto_println(ris, d);
 }
 | PRINTLN STRING {
   int d = strlen(yylval.string);
@@ -188,19 +202,7 @@ int main(int argc, char **argv) {
 
   yyparse();
 
-  unsigned char e[] = "\x00\x21\x00\x01\x00\x03\x00\x00\x00\x00\x00\x01";
-  fwrite(e, 12, 1, ris -> out);
-  //ristretto_write_super_class(ris);
-  ris -> code_size += 0;
-  ristretto_write_main(ris);
-
   // call system.out.println on the id p -> must increase code_size + 8;
-  /*ristretto_getstaticout(ris);
-  int d = linked_list_search(ll, "p");
-  ristretto_println(ris, d);*/
-
-  unsigned char end[] = "\xb1\x00\x00\x00\x00\x00\x00";
-  fwrite(end, sizeof(end) - 1, 1, ris -> out);
 
   ristretto_update_size_constal_pool(ris);
 

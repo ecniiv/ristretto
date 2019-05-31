@@ -8,6 +8,8 @@
 %%
 [[:digit:]]+                  {string_to_int(&(yylval.integer), yytext); return NUMBER;}
 \;                            {return SYMB_END;}
+\{                            {return S_BRACKET;}
+\}                            {return E_BRACKET;}
 \+                            {return ADD;}
 \-                            {return SUB;}
 \*                            {return MUL;}
@@ -20,15 +22,16 @@
 \>\=                          {return GEQ;}
 \&\&                          {return AND;}
 \|\|                          {return OR;}
-";"                           {return SEMIC;}
 "true"                        {return TRUE;}
 "false"                       {return FALSE;}
 "int"                         {return V_INT;}
+"void"                        {return V_VOID;}
 "bool"                        {return V_BOOL;}
 "string"                      {return V_STRING;}
 "if"                          {return IF;}
 "else"                        {return ELSE;}
 \".*\"                        {strcpy(yylval.string, yytext); return STRING;}
+"main(void)"                  {return MAIN_VOID;}
 "println"                     {return PRINTLN;}
 "return"                      {return RETURN;}
 [a-zA-Z][a-zA-Z0-9_]*         {

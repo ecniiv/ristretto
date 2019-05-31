@@ -25,6 +25,7 @@ typedef struct {
   int n_class;
   int n_const;
   int code_size;
+  long int offset_code_size;
 } ristretto;
 
 ristretto *new_ristretto();

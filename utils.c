@@ -15,6 +15,7 @@ ristretto *new_ristretto() {
   ris -> n_class = 0;
   ris -> n_const = 0;
   ris -> code_size = 1;
+  ris -> offset_code_size = 0;
   return ris;
 }
 
@@ -118,6 +119,7 @@ int ristretto_write_main(ristretto *ris) {
   unsigned char attr_size[] = "\x01\x00";
   int code_attr = ris -> main_index + 1;
   fwrite(attr_size, sizeof(attr_size) - 1, 1, ris -> out);
+  ris -> offset_code_size = ftell(ris -> out);
   fwrite(&code_attr, 1, 1, ris -> out);
   unsigned char s[] = "\x00\x00\x00";
   fwrite(s, sizeof(s) - 1, 1, ris -> out);
