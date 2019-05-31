@@ -88,9 +88,8 @@ expr :
 
 }
 | V_STRING ID DECL STRING {
-  printf("%s\n", yylval.string);
   int d = strlen(yylval.string);
-  char *s = malloc(sizeof(d));
+  char *s = malloc(sizeof(MAX_BUFFER));
   char *q = s;
   for (int i = 0; i < (d - 2); i++) {
     *q = yylval.string[i +1];
@@ -106,6 +105,14 @@ expr :
   ristretto_add_constant_pool(ris, CONST);
   ristretto_add_entry(ris, s);
 }
+| PRINTLN NUMBER {
+  if (yylval.integer < 0 || yylval.integer > 5) {
+    fprintf(stderr, "Only number between 0 and 5.\n");
+    return -1;
+  }
+  ristretto_getstaticout(ris);
+  ristretto_println_int(ris, yylval.integer);
+}
 | PRINTLN ID {
   char *id = malloc(sizeof(MAX_SIZE_ID));
   strcpy(id, $2);
@@ -116,16 +123,17 @@ expr :
     return -1;
   }
   ristretto_println(ris, d);
-  ris -> code_size += 8;
 }
 | PRINTLN STRING {
   int d = strlen(yylval.string);
-  char s[d - 2];
+  char *s = malloc(sizeof(MAX_BUFFER));
+  char *q = s;
   for (int i = 0; i < (d - 2); i++) {
-    s[i] = yylval.string[i + 1];
+    *q = yylval.string[i +1];
+    q++;
   }
-  s[d - 2] = '\0';
-  printf("%s\n", s);
+  *q = '\0';
+  printf("%d\n", ris -> index);
 }
 ;
 %%
@@ -195,6 +203,10 @@ int main(int argc, char **argv) {
   ristretto_add_entry(ris, "println");
   ristretto_add_entry(ris, "(Ljava/lang/String;)V");
 
+  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_entry(ris, "java/io/PrintStream");
+  ristretto_add_method(ris);
+  ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "println");
   ristretto_add_entry(ris, "(I)V");
 
@@ -203,6 +215,8 @@ int main(int argc, char **argv) {
   ristretto_add_entry(ris, "Code");
 
   yyparse();
+
+  //ris -> code_size += 8;
 
   ristretto_update_size_constal_pool(ris);
 

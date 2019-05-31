@@ -44,12 +44,16 @@ int ristretto_add_method(ristretto *ris);
 
 int ristretto_add_name_type(ristretto *ris);
 
-int ristretto_update_size_constal_pool(ristretto *ris);
-
-int ristretto_write_super_class(ristretto *ris);
+int ristretto_load_const(ristretto *ris, int i);
 
 int ristretto_getstaticout(ristretto *ris);
 
 int ristretto_println(ristretto *ris, unsigned int index);
 
+int ristretto_println_int(ristretto *ris, unsigned int i);
+
+int ristretto_write_super_class(ristretto *ris);
+
 int ristretto_write_main(ristretto *ris);
+
+int ristretto_update_size_constal_pool(ristretto *ris);

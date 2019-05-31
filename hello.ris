@@ -1,11 +1,15 @@
-string ida = "trolala"
-string test = "Hey dude."
-string cc = "Coucou !"
-string super_id = "Hey, je suis beaucoup trop fort ! :)"
+string test = "Coool"
+string compteur = "C'est parti !"
+string end = "Bye!"
 
 void main(void) {
   println test
-  println cc
-  println ida
-  println super_id
+  println compteur
+  println 5
+  println 4
+  println 3
+  println 2
+  println 1
+  println 0
+  println end
 }
