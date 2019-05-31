@@ -15,7 +15,7 @@
 %union {
   int integer;
   float floatant;
-  char string[BUFFER_SIZE];
+  char string[MAX_BUFFER];
   types t;
   type_synth type;
 }
@@ -57,7 +57,6 @@ lignes expr error '\n'
 expr :
 | V_VOID MAIN_VOID S_BRACKET {
   ristretto_write_super_class(ris);
-  ris -> code_size += 8;
   ristretto_write_main(ris);
 }
 | E_BRACKET {
@@ -89,6 +88,7 @@ expr :
 
 }
 | V_STRING ID DECL STRING {
+  printf("%s\n", yylval.string);
   int d = strlen(yylval.string);
   char *s = malloc(sizeof(d));
   char *q = s;
@@ -97,7 +97,7 @@ expr :
     q++;
   }
   *q = '\0';
-  char *id = malloc(sizeof(16));
+  char *id = malloc(sizeof(MAX_SIZE_ID));
   strcpy(id, $2);
   if (linked_list_insert(ll, ris -> index, id, s) == -1) {
     fprintf(stderr, "%s already exists.\n", id);
@@ -107,9 +107,16 @@ expr :
   ristretto_add_entry(ris, s);
 }
 | PRINTLN ID {
+  char *id = malloc(sizeof(MAX_SIZE_ID));
+  strcpy(id, $2);
   ristretto_getstaticout(ris);
-  int d = linked_list_search(ll, "p");
+  int d = linked_list_search(ll, id);
+  if (d == -1) {
+    fprintf(stderr, "%s unknow.\n", id);
+    return -1;
+  }
   ristretto_println(ris, d);
+  ris -> code_size += 8;
 }
 | PRINTLN STRING {
   int d = strlen(yylval.string);
@@ -195,14 +202,7 @@ int main(int argc, char **argv) {
   ristretto_add_entry(ris, "([Ljava/lang/String;)V");
   ristretto_add_entry(ris, "Code");
 
-  char *p = "Helloooo Woooorld ! :)";
-  linked_list_insert(ll, ris -> index, "p", p);
-  ristretto_add_constant_pool(ris, CONST);
-  ristretto_add_entry(ris, p);
-
   yyparse();
-
-  // call system.out.println on the id p -> must increase code_size + 8;
 
   ristretto_update_size_constal_pool(ris);
 

@@ -35,7 +35,7 @@
 "println"                     {return PRINTLN;}
 "return"                      {return RETURN;}
 [a-zA-Z][a-zA-Z0-9_]*         {
-    if (strlen(yytext) + 1 < BUFFER_SIZE) {
+    if (strlen(yytext) + 1 < MAX_BUFFER) {
       strcpy(yylval.string, yytext);
     } else {
       fprintf(stderr, "erreur string\n");

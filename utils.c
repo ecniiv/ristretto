@@ -84,6 +84,11 @@ int ristretto_update_size_constal_pool(ristretto *ris) {
   fseek(ris -> out, 9, SEEK_SET);
   int d2 = ris -> index - 1;
   fwrite(&d2, 1, 1, ris -> out);
+  unsigned int code_attr_size = ris -> code_size + 12;
+  fseek(ris -> out, ris -> offset_code_size, SEEK_SET);
+  fwrite(&code_attr_size, 1, 1, ris -> out);
+  fseek(ris -> out, ris -> offset_code_size + 8, SEEK_SET);
+  fwrite(&(ris -> code_size), 1, 1, ris -> out);
   fseek(ris -> out, 0, SEEK_END);
   return 0;
 }
@@ -119,16 +124,16 @@ int ristretto_write_main(ristretto *ris) {
   unsigned char attr_size[] = "\x01\x00";
   int code_attr = ris -> main_index + 1;
   fwrite(attr_size, sizeof(attr_size) - 1, 1, ris -> out);
-  ris -> offset_code_size = ftell(ris -> out);
   fwrite(&code_attr, 1, 1, ris -> out);
   unsigned char s[] = "\x00\x00\x00";
   fwrite(s, sizeof(s) - 1, 1, ris -> out);
 
-  unsigned int code_attr_size = ris -> code_size + 12;
-  fwrite(&code_attr_size, 1, 1, ris -> out);
+  ris -> offset_code_size = ftell(ris -> out);
+  unsigned char null[] = "\x00";
+  fwrite(null, 1, 1, ris -> out);
   unsigned char p[] = "\x00\x02\x00\x01\x00\x00\x00";
   fwrite(p, sizeof(p) - 1, 1, ris -> out);
 
-  fwrite(&(ris -> code_size), 1, 1, ris -> out);
+  fwrite(null, 1, 1, ris -> out);
   return 0;
 }

@@ -1,7 +1,11 @@
 string ida = "trolala"
 string test = "Hey dude."
 string cc = "Coucou !"
+string super_id = "Hey, je suis beaucoup trop fort ! :)"
 
 void main(void) {
-  println p
+  println test
+  println cc
+  println ida
+  println super_id
 }

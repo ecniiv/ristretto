@@ -3,7 +3,8 @@
 
 #include <stdbool.h>
 
-#define BUFFER_SIZE 32
+#define MAX_SIZE_ID   32
+#define MAX_BUFFER    128
 
 typedef enum {ERR_ARITH,
               ERR_TYPE,
@@ -18,7 +19,7 @@ typedef union {
   int int_value;
   float float_value;
   bool bool_value;
-  char string_value[BUFFER_SIZE];
+  char string_value[MAX_BUFFER];
 } types;
 
 #endif
