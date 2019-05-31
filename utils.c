@@ -102,9 +102,29 @@ int ristretto_println(ristretto *ris, unsigned int index) {
   return 0;
 }
 
+int ristretto_print(ristretto *ris, unsigned int index) {
+  unsigned char ldc[] = "\x12";
+  unsigned char invoke[] = "\xb6\x00\x17";
+  fwrite(ldc, U1_SIZE, 1, ris -> out);
+  unsigned int d = index - 1;
+  fwrite(&d, U1_SIZE, 1, ris -> out);
+  fwrite(invoke, U2_SIZE + U1_SIZE, 1, ris -> out);
+  ris -> code_size += U1_SIZE + U1_SIZE + U2_SIZE + U1_SIZE;
+  return 0;
+}
+
 int ristretto_println_int(ristretto *ris, unsigned int i) {
   unsigned int d = i + 3;
-  unsigned char invoke[] = "\xb6\x00\x17";
+  unsigned char invoke[] = "\xb6\x00\x1d";
+  fwrite(&d, U1_SIZE, 1, ris -> out);
+  fwrite(invoke, U2_SIZE + U1_SIZE, 1, ris -> out);
+  ris -> code_size += U1_SIZE + U2_SIZE + U1_SIZE;
+  return 0;
+}
+
+int ristretto_print_int(ristretto *ris, unsigned int i) {
+  unsigned int d = i + 3;
+  unsigned char invoke[] = "\xb6\x00\x23";
   fwrite(&d, U1_SIZE, 1, ris -> out);
   fwrite(invoke, U2_SIZE + U1_SIZE, 1, ris -> out);
   ris -> code_size += U1_SIZE + U2_SIZE + U1_SIZE;

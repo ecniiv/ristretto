@@ -14,26 +14,19 @@
 \-                            {return SUB;}
 \*                            {return MUL;}
 \/                            {return DIV;}
-\!                            {return NOT;}
-\!                            {return NOT;}
 \=                            {return DECL;}
-\!\=                          {return NEQ;}
-\<\=                          {return LEQ;}
-\>\=                          {return GEQ;}
-\&\&                          {return AND;}
-\|\|                          {return OR;}
-"true"                        {return TRUE;}
-"false"                       {return FALSE;}
+\=\=                          {return EQ;}
 "int"                         {return V_INT;}
 "void"                        {return V_VOID;}
-"bool"                        {return V_BOOL;}
 "string"                      {return V_STRING;}
+"true"                        {return TRUE;}
+"false"                       {return FALSE;}
 "if"                          {return IF;}
 "else"                        {return ELSE;}
 \".*\"                        {strcpy(yylval.string, yytext); return STRING;}
 "main(void)"                  {return MAIN_VOID;}
+"print"                       {return PRINT;}
 "println"                     {return PRINTLN;}
-"return"                      {return RETURN;}
 [a-zA-Z][a-zA-Z0-9_]*         {
     if (strlen(yytext) + 1 < MAX_BUFFER) {
       strcpy(yylval.string, yytext);

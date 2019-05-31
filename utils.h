@@ -50,7 +50,11 @@ int ristretto_getstaticout(ristretto *ris);
 
 int ristretto_println(ristretto *ris, unsigned int index);
 
+int ristretto_print(ristretto *ris, unsigned int index);
+
 int ristretto_println_int(ristretto *ris, unsigned int i);
+
+int ristretto_print_int(ristretto *ris, unsigned int i);
 
 int ristretto_write_super_class(ristretto *ris);
 

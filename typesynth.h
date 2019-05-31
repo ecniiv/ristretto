@@ -6,20 +6,6 @@
 #define MAX_SIZE_ID   32
 #define MAX_BUFFER    128
 
-typedef enum {ERR_ARITH,
-              ERR_TYPE,
-              INT_TYPE,
-              BOOL_TYPE,
-              FLOAT_TYPE,
-              UNKNOWN,
-              STRING_TYPE}
-type_synth;
-
-typedef union {
-  int int_value;
-  float float_value;
-  bool bool_value;
-  char string_value[MAX_BUFFER];
-} types;
+typedef enum {ERR_TYPE, ERR_STACK, FALSE_STATMENT, INT_TYPE, BOOL_TYPE, ID_TYPE, STRING_TYPE} type_synth;
 
 #endif
