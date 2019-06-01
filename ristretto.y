@@ -63,6 +63,18 @@ expr :
   unsigned char end[] = "\xb1\x00\x00\x00\x00\x00\x00";
   fwrite(end, sizeof(end) - 1, 1, ris -> out);
 }
+| V_INT ID DECL expr SYMB_END {
+  if ($4 == INT_TYPE || $4 == BOOL_TYPE) {
+    char *id = malloc(sizeof(MAX_SIZE_ID));
+    strcpy(id, $2);
+    if (linked_list_insert(ll, ris -> index, id, INT_TYPE) == -1) {
+      fprintf(stderr, "%s already exists.\n", id);
+      return -1;
+    }
+    stack_size--;
+    ristretto_add_integer(ris, stack[stack_size]);
+  }
+}
 | V_STRING ID DECL STRING SYMB_END {
   int d = strlen(yylval.string);
   char *s = malloc(sizeof(MAX_BUFFER));
@@ -74,20 +86,24 @@ expr :
   *q = '\0';
   char *id = malloc(sizeof(MAX_SIZE_ID));
   strcpy(id, $2);
-  if (linked_list_insert(ll, ris -> index, id, s) == -1) {
+  if (linked_list_insert(ll, ris -> index, id, STRING_TYPE) == -1) {
     fprintf(stderr, "%s already exists.\n", id);
     return -1;
   }
-  ristretto_add_constant_pool(ris, CONST);
-  ristretto_add_entry(ris, s);
+  ristretto_add_string(ris, s);
 }
 | PRINT expr SYMB_END {
   if ($2 == FALSE_STATMENT) {
     stack_size--;
-  } else if ($2 == INT_TYPE) {
+  } else if ($2 == INT_TYPE || $2 == BOOL_TYPE) {
+    if (yylval.integer < 0 || yylval.integer > 5) {
+      fprintf(stderr, "Only number between 0 and 5.\n");
+      $$ = ERR_TYPE;
+    }
     ristretto_getstaticout(ris);
     stack_size--;
-    ristretto_print_int(ris, stack[stack_size]);
+    ristretto_iconst(ris, stack[stack_size]);
+    ristretto_print_int(ris);
   } else if ($2 == ID_TYPE) {
     char *id = malloc(sizeof(MAX_SIZE_ID));
     strcpy(id, yylval.string);
@@ -97,16 +113,27 @@ expr :
       fprintf(stderr, "%s unknow.\n", id);
       return -1;
     }
-    ristretto_print(ris, d);
+    int type = linked_list_type_of_id(ll, id);
+    ristretto_load_const(ris, d);
+    if (type == STRING_TYPE) {
+      ristretto_print(ris);
+    } else if (type == INT_TYPE) {
+      ristretto_print_int(ris);
+    }
   }
 }
 | PRINTLN expr SYMB_END {
   if ($2 == FALSE_STATMENT) {
     stack_size--;
   } else if ($2 == INT_TYPE || $2 == BOOL_TYPE) {
+    if (yylval.integer < 0 || yylval.integer > 5) {
+      fprintf(stderr, "Only number between 0 and 5.\n");
+      $$ = ERR_TYPE;
+    }
     ristretto_getstaticout(ris);
     stack_size--;
-    ristretto_println_int(ris, stack[stack_size]);
+    ristretto_iconst(ris, stack[stack_size]);
+    ristretto_println_int(ris);
   } else if ($2 == ID_TYPE) {
     char *id = malloc(sizeof(MAX_SIZE_ID));
     strcpy(id, yylval.string);
@@ -116,7 +143,13 @@ expr :
       fprintf(stderr, "%s unknow.\n", id);
       return -1;
     }
-    ristretto_println(ris, d);
+    int type = linked_list_type_of_id(ll, id);
+    ristretto_load_const(ris, d);
+    if (type == STRING_TYPE) {
+      ristretto_println(ris);
+    } else if (type == INT_TYPE) {
+      ristretto_println_int(ris);
+    }
   }
 }
 | PRINTLN STRING SYMB_END{
@@ -130,32 +163,18 @@ expr :
   *q = '\0';
   printf("%d\n", ris -> index);
 }
-| IF '(' expr ')' expr {
-  if ($3 == BOOL_TYPE) {
-    stack_size--;
-    stack_size--;
-    if (stack[stack_size++] == 0) {
-      $5 = FALSE_STATMENT;
-    }
-  }
-}
 | '(' expr ')' {
   $$ = $2;
 }
 | expr ADD expr {
-  if ($1 == BOOL_TYPE || $3 == BOOL_TYPE) {
-    $$ = ERR_TYPE;
-  } else if ($1 != INT_TYPE) {
-    $$ = $1;
-  } else if ($3 != INT_TYPE) {
-    $$ = $3;
-  } else if (stack_size < 2) {
-    $$ = ERR_STACK;
-  } else {
+  if ($1 == INT_TYPE && $3 == INT_TYPE) {
     int a = stack[stack_size - 1];
     stack_size--;
     int b = stack[stack_size - 1];
     stack[stack_size - 1] = b + a;
+    $$ = INT_TYPE;
+  } else if ($1 == ID_TYPE && $3 == ID_TYPE) {
+    fprintf(stdout, "wait\n");
     $$ = INT_TYPE;
   }
 }
@@ -226,10 +245,6 @@ expr :
     fprintf(stderr, "ERR_STACK");
     $$ = ERR_STACK;
   } else {
-    if (yylval.integer < 0 || yylval.integer > 5) {
-      fprintf(stderr, "Only number between 0 and 5.\n");
-      $$ = ERR_TYPE;
-    }
     stack[stack_size] = $1;
     ++stack_size;
     $$ = INT_TYPE;
@@ -304,46 +319,46 @@ int main(int argc, char **argv) {
 
   ll = linked_list_empty();
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   char *class = ris_to_name(argv[1]);
   ristretto_add_entry(ris, class);
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/lang/Object");
   ristretto_add_method(ris);
   ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "<init>");
   ristretto_add_entry(ris, "()V");
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/lang/System");
   ristretto_add_reference(ris);
   ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "out");
   ristretto_add_entry(ris, "Ljava/io/PrintStream;");
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/io/PrintStream");
   ristretto_add_method(ris);
   ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "println");
   ristretto_add_entry(ris, "(Ljava/lang/String;)V");
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/io/PrintStream");
   ristretto_add_method(ris);
   ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "print");
   ristretto_add_entry(ris, "(Ljava/lang/String;)V");
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/io/PrintStream");
   ristretto_add_method(ris);
   ristretto_add_name_type(ris);
   ristretto_add_entry(ris, "println");
   ristretto_add_entry(ris, "(I)V");
 
-  ristretto_add_constant_pool(ris, CLASS);
+  ristretto_add_class(ris);
   ristretto_add_entry(ris, "java/io/PrintStream");
   ristretto_add_method(ris);
   ristretto_add_name_type(ris);

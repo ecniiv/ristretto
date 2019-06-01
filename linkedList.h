@@ -8,6 +8,7 @@ typedef struct ll_node ll_node;
 typedef struct ll_node {
   unsigned int bytecode_index;
   char *id;
+  int type;
   void *value;
   ll_node *next;
 } ll_node;
@@ -41,9 +42,11 @@ extern int linked_list_head_value(const linked_list * s, void *ptr);
 //    sens de compar, en cas d'érreur ou s'il ne trouve rien renvoie NULL.
 extern int linked_list_search(const linked_list * s, char *id);
 
+extern int linked_list_type_of_id(const linked_list *s, char *id);
+
 //  linked_list_insert: Insère ptr a la fin de la liste associée à s. Renvoie
 //    zéro en cas de succès, une valeur non nulle en cas d'échec
-extern int linked_list_insert(linked_list * s,  unsigned int index, char *id, void *ptr);
+extern int linked_list_insert(linked_list * s,  unsigned int index, char *id, int type);
 
 //  linked_list_remove : Retire l'object pointer par ptr de la liste chaînée,
 //    renvoie son addresse en cas de succès, NULL sinon.

@@ -47,7 +47,22 @@ int linked_list_search(const linked_list *s, char *id) {
   return (result == 0 ? p -> bytecode_index : -1);
 }
 
-int linked_list_insert(linked_list *s, unsigned int index, char *id, void *ptr) {
+int linked_list_type_of_id(const linked_list *s, char *id) {
+  if (id == NULL || s == NULL) {
+    return -1;
+  }
+  if (s -> size == 0) {
+    return -1;
+  }
+  ll_node *p = s -> head;
+  int result = -1;
+  while (p != NULL && (result = strcmp(id, p -> id)) != 0) {
+    p = p -> next;
+  }
+  return (result == 0 ? p -> type : -1);
+}
+
+int linked_list_insert(linked_list *s, unsigned int index, char *id, int type) {
   ll_node *p = malloc(sizeof(ll_node));
   if (p == NULL) {
     return -1;
@@ -56,8 +71,8 @@ int linked_list_insert(linked_list *s, unsigned int index, char *id, void *ptr) 
     return -1;
   }
   p -> bytecode_index = index;
+  p -> type = type;
   p -> id = id;
-  p -> value = ptr;
   p -> next = NULL;
   s -> size += 1;
   if (s -> head == NULL) {
