@@ -1,5 +1,0 @@
-string s = "Hello";
-int a = 2;
-
-void main(void) {
-}
