@@ -87,7 +87,7 @@ println isTrue;
 ```
 
 ```
-$ java
+$ java Test2
 4
 1
 ```
