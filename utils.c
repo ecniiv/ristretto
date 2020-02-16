@@ -10,6 +10,9 @@
 
 ristretto *new_ristretto() {
   ristretto *ris = malloc(sizeof(ristretto));
+  if (ris == NULL) {
+    return NULL;
+  }
   ris -> out = NULL;
   ris -> size_index = 0;
   ris -> magic_number = MAGIC_NUMBER;
@@ -182,7 +185,7 @@ int ristretto_write_main(ristretto *ris) {
   return 0;
 }
 
-int ristretto_update_size_constal_pool(ristretto *ris) {
+int ristretto_update_size_constant_pool(ristretto *ris) {
   fseek(ris -> out, 9, SEEK_SET);
   int d2 = ris -> index - 1;
   fwrite(&d2, U1_SIZE, 1, ris -> out);

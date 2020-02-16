@@ -28,12 +28,15 @@
 \=                                  {return DECL;}
 \=\=                                {return EQ;}
 "int"                               {return V_INT;}
+"bool"                              {return V_BOOL;}
 "void"                              {return V_VOID;}
 "string"                            {return V_STRING;}
 "true"                              {return TRUE;}
 "false"                             {return FALSE;}
 "if"                                {return IF;}
 "else"                              {return ELSE;}
+"&&"                                {return AND;}
+"||"                                {return OR;}
 \".*\"                              {strcpy(yylval.string, yytext); return STRING;}
 "main(void)"                        {return MAIN_VOID;}
 "print"                             {return PRINT;}

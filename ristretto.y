@@ -27,8 +27,9 @@
 
 %token ADD SUB MUL DIV DECL EQ
 
-%token V_INT V_VOID V_STRING
+%token V_INT V_BOOL V_VOID V_STRING
 %token TRUE FALSE
+%token AND OR
 %token IF ELSE
 
 %token STRING ID MAIN_VOID PRINT PRINTLN
@@ -38,6 +39,7 @@
 %type<string> ID
 %type<type> expr
 
+%left AND OR
 %left DECL
 %left EQ
 
@@ -54,17 +56,15 @@ lignes expr error '\n'
 | '\n'
 ;
 
-expr :
-| V_VOID MAIN_VOID S_BRACKET {
+expr:
+V_VOID MAIN_VOID S_BRACKET {
   ristretto_write_super_class(ris);
   ristretto_write_main(ris);
-}
-| E_BRACKET {
+} | E_BRACKET {
   unsigned char end[] = "\xb1\x00\x00\x00\x00\x00\x00";
   fwrite(end, sizeof(end) - 1, 1, ris -> out);
-}
-| V_INT ID DECL expr SYMB_END {
-  if ($4 == INT_TYPE || $4 == BOOL_TYPE) {
+} | V_BOOL ID DECL expr SYMB_END {
+  if ($4 == INT_TYPE) {
     char *id = malloc(sizeof(MAX_SIZE_ID));
     strcpy(id, $2);
     if (linked_list_insert(ll, ris -> index, id, INT_TYPE) == -1) {
@@ -74,8 +74,18 @@ expr :
     stack_size--;
     ristretto_add_integer(ris, stack[stack_size]);
   }
-}
-| V_STRING ID DECL STRING SYMB_END {
+} | V_INT ID DECL expr SYMB_END {
+  if ($4 == INT_TYPE) {
+    char *id = malloc(sizeof(MAX_SIZE_ID));
+    strcpy(id, $2);
+    if (linked_list_insert(ll, ris -> index, id, INT_TYPE) == -1) {
+      fprintf(stderr, "%s already exists.\n", id);
+      return -1;
+    }
+    stack_size--;
+    ristretto_add_integer(ris, stack[stack_size]);
+  }
+} | V_STRING ID DECL STRING SYMB_END {
   int d = strlen(yylval.string);
   char *s = malloc(sizeof(MAX_BUFFER));
   char *q = s;
@@ -91,8 +101,7 @@ expr :
     return -1;
   }
   ristretto_add_string(ris, s);
-}
-| PRINT expr SYMB_END {
+} | PRINT expr SYMB_END {
   if ($2 == FALSE_STATMENT) {
     stack_size--;
   } else if ($2 == INT_TYPE || $2 == BOOL_TYPE) {
@@ -121,8 +130,7 @@ expr :
       ristretto_print_int(ris);
     }
   }
-}
-| PRINTLN expr SYMB_END {
+} | PRINTLN expr SYMB_END {
   if ($2 == FALSE_STATMENT) {
     stack_size--;
   } else if ($2 == INT_TYPE || $2 == BOOL_TYPE) {
@@ -151,22 +159,9 @@ expr :
       ristretto_println_int(ris);
     }
   }
-}
-| PRINTLN STRING SYMB_END{
-  int d = strlen(yylval.string);
-  char *s = malloc(sizeof(MAX_BUFFER));
-  char *q = s;
-  for (int i = 0; i < (d - 2); i++) {
-    *q = yylval.string[i +1];
-    q++;
-  }
-  *q = '\0';
-  printf("%d\n", ris -> index);
-}
-| '(' expr ')' {
+} | '(' expr ')' {
   $$ = $2;
-}
-| expr ADD expr {
+} | expr ADD expr {
   if ($1 == INT_TYPE && $3 == INT_TYPE) {
     int a = stack[stack_size - 1];
     stack_size--;
@@ -177,8 +172,7 @@ expr :
     fprintf(stdout, "wait\n");
     $$ = INT_TYPE;
   }
-}
-| expr SUB expr {
+} | expr SUB expr {
   if ($1 == BOOL_TYPE || $3 == BOOL_TYPE) {
     $$ = ERR_TYPE;
   } else if ($1 != INT_TYPE) {
@@ -194,8 +188,7 @@ expr :
     stack[stack_size - 1] = b - a;
     $$ = INT_TYPE;
   }
-}
-| expr MUL expr {
+} | expr MUL expr {
   if ($1 == BOOL_TYPE || $3 == BOOL_TYPE) {
     $$ = ERR_TYPE;
   } else if ($1 != INT_TYPE) {
@@ -211,8 +204,7 @@ expr :
     stack[stack_size - 1] = a * b;
     $$ = INT_TYPE;
   }
-}
-| expr DIV expr {
+} | expr DIV expr {
   if ($1 == BOOL_TYPE || $3 == BOOL_TYPE) {
     $$ = ERR_TYPE;
   } else if ($1 != INT_TYPE) {
@@ -228,8 +220,7 @@ expr :
     stack[stack_size - 1] = b / a;
     $$ = INT_TYPE;
   }
-}
-| expr EQ expr {
+} | expr EQ expr {
   if (stack_size < 2) {
     $$ = ERR_STACK;
   } else {
@@ -237,10 +228,33 @@ expr :
     stack_size--;
     int b = stack[stack_size - 1];
     stack[stack_size  - 1] = (b == a);
-    $$ = BOOL_TYPE;
+    $$ = INT_TYPE;
   }
-}
-| NUMBER {
+} | expr AND expr {
+  if (stack_size < 2) {
+    $$ = ERR_STACK;
+  } else {
+    if ($1 == INT_TYPE && $3 == INT_TYPE) {
+      int a = stack[stack_size - 1];
+      stack_size--;
+      int b = stack[stack_size - 1];
+      stack[stack_size  - 1] = (b && a);
+      $$ = INT_TYPE;
+    }
+  }
+} | expr OR expr {
+  if (stack_size < 2) {
+    $$ = ERR_STACK;
+  } else {
+    if ($1 == INT_TYPE && $3 == INT_TYPE) {
+      int a = stack[stack_size - 1];
+      stack_size--;
+      int b = stack[stack_size - 1];
+      stack[stack_size  - 1] = (b || a);
+      $$ = INT_TYPE;
+    }
+  }
+} | NUMBER {
   if (stack_size == STACK_CAPACITY) {
     fprintf(stderr, "ERR_STACK");
     $$ = ERR_STACK;
@@ -249,31 +263,27 @@ expr :
     ++stack_size;
     $$ = INT_TYPE;
   }
-}
-| ID {
+} | ID {
   $$ = ID_TYPE;
-}
-| STRING {
+} | STRING {
   $$ = STRING_TYPE;
-}
-| TRUE {
+} | TRUE {
   if (stack_size == STACK_CAPACITY) {
     fprintf(stderr, "ERR_STACK");
     $$ = ERR_STACK;
   } else {
     stack[stack_size] = 1;
     ++stack_size;
-    $$ = BOOL_TYPE;
+    $$ = INT_TYPE;
   }
-}
-| FALSE {
+} | FALSE {
   if (stack_size == STACK_CAPACITY) {
     fprintf(stderr, "ERR_STACK");
     $$ = ERR_STACK;
   } else {
     stack[stack_size] = 0;
     ++stack_size;
-    $$ = BOOL_TYPE;
+    $$ = INT_TYPE;
   }
 }
 ;
@@ -371,12 +381,11 @@ int main(int argc, char **argv) {
 
   yyparse();
 
-  //ris -> code_size += 8;
+  ristretto_update_size_constant_pool(ris);
 
-  ristretto_update_size_constal_pool(ris);
-
+  linked_list_dispose(&ll);
   free(ris);
-
+  fclose(yyin);
   fclose(dest);
   return 0;
 }
