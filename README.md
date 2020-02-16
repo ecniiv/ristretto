@@ -1,16 +1,15 @@
-# ristretto
+#Ristretto
 
-Ristretto est un compilateur qui contient 3 types (int, bool et string) et deux fonctions
-(print et println). Ristretto reconnaît la définition et l’initialisation d’une variable en même
-temps, mais ne reconnaît que des variables globales. Les opérations basiques (+, -, *, /, ==)
-sont implémentées lors de l’initialisation d’une variable et à l’intérieur d’un appel à print ou
-println pour des valeurs allant de 0 à 5. print et println gèrent les int de 0 à 5 et variables
-globales.
+*Ristretto* est un compilateur qui contient 3 types (*int*, *bool* et *string*) et deux fonctions (*print* et *println*). Ristretto reconnaît la définition et l’initialisation d’une variable en même temps, mais ne reconnaît que des variables globales. Les opérations basiques (+, -, *, /, ==) sont implémentées lors de l’initialisation d’une variable et à l’intérieur d’un appel à *print* ou *println* pour des valeurs allant de 0 à 5. print et println gèrent les int de 0 à 5 et variables globales.
 
-# MANUEL D'UTILISATION
+Ristretto utilise *Java 8*, soit la version *52.00*.
 
-Après avoir compilé le programme correctement, il est utilisable de cette façon :
+##Usage
+
+Après avoir compilé le programme correctement, il est utilisable de cette façon : 
+```
 ./ristretto main.ris
+```
 ristretto produit en sortie Main.class contenant du bytecode exécutable par Java.
 Le fichier .ris doit absolument contenir la fonction principale
 // main function

@@ -1,0 +1,30 @@
+string test = "Coool; ";
+string compteur = "C'est parti !";
+string sep = "-----";
+
+void main(void) {
+  print test;
+  println compteur;
+  println sep;
+  println true;
+  println false;
+  println sep;
+  if (true) println 2;
+  if (false) println 3;
+  if (false) println 2;
+  if (true) println 4;
+  println sep;
+  println (2 == 2);
+  println (2 == 4);
+  println sep;
+  println 5;
+  println 4;
+  println 3;
+  println 2;
+  println 1;
+  println 0;
+  println (2 + 2);
+  println (5 - 2);
+  println (5 / 3);
+  println (1 + 4);
+}
