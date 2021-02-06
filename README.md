@@ -35,10 +35,11 @@ Voici un simple exemple :
 string s = "Hello";
 int a = 122;
 bool b = true; // true == 1, false == 0
+
 void main(void) {
-println s;
-println a;
-println b;
+  println s;
+  println a;
+  println b;
 }
 ```
 
@@ -57,12 +58,13 @@ int b = 128 / 4;
 int c = 30 - 21;
 bool d = true && false;
 bool d2 = true || false;
+
 void main(void) {
-println a;
-println b;
-println c;
-print d;
-print d2;
+  println a;
+  println b;
+  println c;
+  print d;
+  print d2;
 }
 ```
 
@@ -81,9 +83,10 @@ Des calculs plus complexe sont également compréhensible:
 36 == 36
 int isTrue = ((5 * 3) + (4 * 6) - 3) == (6 * (5 + (true == (97 - 96))));
 int b = 3 + (true && true);
+
 void main(void) {
-println b;
-println isTrue;
+  println b;
+  println isTrue;
 }
 ```
 
